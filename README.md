@@ -73,7 +73,9 @@ Build: gradle & cmake
 Framework: MVP
 
 Now all lib is compile to "libxxx.so",  jni and ndk is basic. core is jni and ndk from java to c map.  
-not a linux executable file(Future)
+~~not a linux executable file(Future)~~  
+Now, proxmark3 client is a linux executable, the executable pack in: app_main/src/main/assets/proxmark3.zip  
+You can compile your client and use zip to pack client and update on app settings page(Future).  
 
 ## Compability list
 
@@ -91,6 +93,13 @@ The app has been tested with these Android phones.  Feel free to contribute with
 ## Support
 
 Open issues here relating to the source code,  other support questions use `android@rfidresearchgroup.com`
+
+## Dependents
+
+Thanks:
+
+- Terminal: [TERMUX](https://github.com/termux)
+- Communication: [UsbSerial](https://github.com/felHR85/UsbSerial) 
 
 ## Maintainer
 Feel free to contribute and make this app better!

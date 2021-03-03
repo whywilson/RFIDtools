@@ -21,7 +21,6 @@ import java.util.Set;
 
 import cn.dxl.common.util.AppUtil;
 import cn.dxl.common.util.FileUtils;
-import cn.dxl.common.util.LogUtils;
 import cn.rrg.rdv.R;
 import cn.rrg.rdv.activities.tools.DumpEditActivity;
 import cn.rrg.rdv.application.Properties;
@@ -40,18 +39,6 @@ public class Commons {
     private Commons() {
     }
 
-    //呼叫QQ
-    public static void callQQ(Context context, String qq, Runnable onFaild) {
-        //这里的228451878是自己指定的QQ号码，可以自己更换
-        String url = "mqqwpa://im/chat?chat_type=wpa&uin=" + qq;
-        try {
-            context.startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(url)));
-        } catch (Exception e) {
-            onFaild.run();
-        }
-    }
-
-    //打开浏览器，链接到指定的链接
     public static void openUrl(Context context, String url) {
         try {
             Uri uri = Uri.parse(url);
@@ -64,32 +51,9 @@ public class Commons {
         }
     }
 
-    //根据单选返回地址!
-    public static String getCustomerPath(RadioGroup group) {
-        if (group == null) return Paths.DUMP_DIRECTORY;
-        int id = group.getCheckedRadioButtonId();
-        String path;
-        if (id == R.id.rdoBtnWriteDataDefaultPath) {
-            path = Paths.DUMP_DIRECTORY;
-        } else if (id == R.id.rdoBtnWriteDataMCTPath) {
-            path = Paths.MCT_DUMP_DIRECTORY;
-        } else if (id == R.id.rdoBtnWriteDataWecatPath) {
-            path = Paths.WECAT_DIRECTORY;
-        } else if (id == R.id.rdoBtnWriteDataSdcardPath) {
-            path = Paths.EXTERNAL_STORAGE_DIRECTORY;
-        } else if (id == R.id.rdoBtnWriteDataQQPath) {
-            path = Paths.QQ_DIRECTORY;
-        } else if (id == R.id.rdoBtnWriteDataMToolsPath) {
-            return Paths.MTools_DUMP_DIRECTORY;
-        } else if (id == R.id.rdoBtnWriteDataPM3Path) {
-            return Paths.PM3_DIRECTORY;
-        } else {
-            path = Paths.DUMP_DIRECTORY;
-        }
-        return path;
-    }
-
-    //移除设备对象从集合中!
+    /**
+     * Remove the device from a list
+     */
     public static boolean removeDevByList(DevBean devBean, List<DevBean> list) {
         if (devBean != null) {
             String addr = devBean.getMacAddress();
@@ -108,14 +72,18 @@ public class Commons {
         return true;
     }
 
-    //判断两个设备是否是一致的
+    /**
+     * Check device is equal
+     */
     public static boolean equalDebBean(DevBean a, DevBean b) {
         if (a == b) return true;
         if (a == null || b == null) return false;
         return a.getMacAddress().equals(b.getMacAddress());
     }
 
-    //从蓝牙适配器中取出历史连接的设备列表!
+    /**
+     * Get all device from bluetooth adapter
+     */
     public static DevBean[] getDevsFromBTAdapter(BluetoothAdapter btAdapter) {
         ArrayList<DevBean> devList = new ArrayList<>();
         Set<BluetoothDevice> pairedDevices = btAdapter.getBondedDevices();
@@ -132,10 +100,12 @@ public class Commons {
         return ArrayUtils.list2Arr(devList);
     }
 
-    //设备是否是USB设备!
+    /**
+     * Check is a usb device
+     * the usb no valid mac!
+     */
     public static boolean isUsbDevice(String address) {
         if (address == null) return false;
-        //这三种mac是开发者定义的用于区分USB设备和蓝牙设备的特征符！
         switch (address) {
             case "00:00:00:00:00:00":
             case "00:00:00:00:00:01":
@@ -258,13 +228,54 @@ public class Commons {
                 new File(Paths.PM3_IMAGE_BOOT_FILE).exists();
     }
 
-    public static void setAutoGoToTermux(boolean auto) {
+    public static void setAutoGoToTerminal(boolean auto) {
         getPrivatePreferences().edit()
-                .putBoolean(Properties.k_auto_goto_termux, auto)
+                .putBoolean(Properties.k_auto_goto_terminal, auto)
                 .apply();
     }
 
-    public static boolean getAutoGoToTermux() {
-        return getPrivatePreferences().getBoolean(Properties.k_auto_goto_termux, false);
+    public static boolean getAutoGoToTerminal() {
+        return getPrivatePreferences().getBoolean(Properties.k_auto_goto_terminal, false);
+    }
+
+    /**
+     * Set terminal type
+     *
+     * @param type 0 = full terminal view
+     *             1= simple terminal view
+     */
+    public static void setTerminalType(int type) {
+        getPrivatePreferences().edit()
+                .putInt(Properties.k_terminal_type, type)
+                .apply();
+    }
+
+    public static int getTerminalType() {
+        return getPrivatePreferences()
+                .getInt(Properties.k_terminal_type, -1);
+    }
+
+    public static void setPM3ExternalWorkDirectoryEnable(boolean enable) {
+        getPrivatePreferences().edit()
+                .putBoolean(Properties.k_pm3_externl_cwd_enable, enable)
+                .apply();
+    }
+
+    public static boolean isPM3ExternalWorkDirectoryEnable() {
+        return getPrivatePreferences()
+                .getBoolean(Properties.k_pm3_externl_cwd_enable, false);
+    }
+
+    public static String updatePM3Cwd() {
+        // init pm3 cwd
+        if (Commons.isPM3ExternalWorkDirectoryEnable()) {
+            TermuxService.PM3_CWD = Paths.PM3_CWD_FINAL;
+            Paths.PM3_CWD = TermuxService.PM3_CWD;
+            new File(Paths.PM3_CWD).mkdirs();
+        } else {
+            Paths.PM3_CWD = TermuxService.HOME_PATH;
+            TermuxService.PM3_CWD = null;
+        }
+        return Paths.PM3_CWD;
     }
 }

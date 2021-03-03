@@ -4,6 +4,7 @@ import android.Manifest;
 import android.app.Activity;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 
 import androidx.annotation.Nullable;
@@ -11,8 +12,9 @@ import androidx.appcompat.app.AlertDialog;
 
 import cn.rrg.rdv.R;
 import cn.rrg.rdv.activities.main.PM3FlasherMainActivity;
+import cn.rrg.rdv.activities.proxmark3.rdv4_rrg.Proxmark3Rdv4RRGRedTeamConsoleActivity;
 import cn.rrg.rdv.activities.tools.DeviceConnectActivity;
-import cn.rrg.rdv.activities.tools.Proxmark3NewTerminalInitActivity;
+import cn.rrg.rdv.activities.proxmark3.rdv4_rrg.Proxmark3NewTerminalInitActivity;
 import cn.rrg.rdv.callback.ConnectFailedCtxCallback;
 import cn.rrg.rdv.models.AbstractDeviceModel;
 import cn.rrg.rdv.models.Proxmark3Rdv4SppModel;
@@ -20,9 +22,6 @@ import cn.rrg.rdv.models.Proxmark3Rdv4UsbModel;
 import cn.dxl.common.util.PermissionUtil;
 
 /**
- * 专供RDV4连接设备
- * 可以使用USB 与 SPP两种方式连接设备
- *
  * @author DXL
  */
 public class Proxmark3Rdv4RRGConnectActivity
@@ -48,12 +47,16 @@ public class Proxmark3Rdv4RRGConnectActivity
 
     @Override
     public Class getTarget() {
-        return Proxmark3NewTerminalInitActivity.class;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            return Proxmark3NewTerminalInitActivity.class;
+        } else {
+            return Proxmark3Rdv4RRGRedTeamConsoleActivity.class;
+        }
     }
 
     @Override
     public String getConnectingMsg() {
-        return getString(R.string.tips_view_use_termux);
+        return getString(R.string.tips_plz_wait);
     }
 
     @Override

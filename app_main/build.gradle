@@ -5,11 +5,11 @@ android {
     buildToolsVersion "29.0.2"
     defaultConfig {
         applicationId "com.rfidresearchgroup.rfidtools"
-        minSdkVersion 24
+        minSdkVersion 21
         targetSdkVersion 28
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
-        versionCode 24
-        versionName "1.4.6 Termux"
+        versionCode 26
+        versionName "1.4.8 SDK21 && PM3 CWD"
     }
     buildTypes {
         release {
@@ -52,23 +52,19 @@ dependencies {
 
     annotationProcessor 'com.github.bumptech.glide:compiler:4.5.0'
 
-    // This my project maven from github release!
-    implementation 'com.github.xianglin1998:IORedirector:1.0'
-    implementation 'com.github.xianglin1998:Crapto1:1.3'
-    implementation 'com.github.xianglin1998:nfctag:1.0'
-    implementation 'com.github.xianglin1998:nfc_console:1.0'
-
-    implementation 'com.github.xianglin1998:ComBridge:1.0.7'
-    // implementation project(path: ':iobridges')
+    implementation project(path: ':iobridges')
+    implementation project(path: ':crapto1')
+    implementation project(path: ':nfctag')
+    implementation project(path: ':console')
+    implementation project(path: ':redirector')
 
     implementation project(':utils')
     implementation project(':libnfc_pn53x')
     implementation project(':chameleon')
     implementation project(':communication')
 
-    testImplementation 'junit:junit:4.12'
     implementation project(path: ':pm3flasher')
-    implementation project(path: ':xmodem')
+    implementation project(':pm3rdv4rrg')
 
     // The dep from TERMUX(A FullTerminal implements.)
     implementation project(":termux-app")

@@ -32,6 +32,7 @@ import java.io.OutputStream;
 import java.nio.channels.FileChannel;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.List;
 
 import cn.dxl.common.R;
 
@@ -130,6 +131,20 @@ public class FileUtils {
             resultList.add(tmpBUf);
         }
         return ArrayUtils.list2Arr(resultList);
+    }
+
+    // read all lines to a line
+    public static String readLine(File file) {
+        StringBuilder builder = new StringBuilder();
+        try {
+            String[] lines = readLines(file);
+            for (String line : lines) {
+                builder.append(line);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return builder.toString();
     }
 
     //按匹配的行读取文件
@@ -354,43 +369,52 @@ public class FileUtils {
 
     private static String getFilePathByUri_BELOWAPI11(Uri uri) {
         // 以 content:// 开头的，比如 content://media/extenral/images/media/17766
-        if (ContentResolver.SCHEME_CONTENT.equals(uri.getScheme())) {
-            String path = null;
-            String[] projection = new String[]{MediaStore.Images.Media.DATA};
-            Cursor cursor = context.getContentResolver().query(uri, projection, null, null, null);
+        try {
+            if (ContentResolver.SCHEME_CONTENT.equals(uri.getScheme())) {
+                String path = null;
+                String[] projection = new String[]{MediaStore.Images.Media.DATA};
+                Cursor cursor = context.getContentResolver().query(uri, projection, null, null, null);
+                if (cursor != null) {
+                    if (cursor.moveToFirst()) {
+                        try {
+                            int columnIndex = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
+                            if (columnIndex > -1) {
+                                path = cursor.getString(columnIndex);
+                            }
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+                    cursor.close();
+                }
+                return path;
+            }
+        } catch (Exception e) {
+            return null;
+        }
+        return null;
+    }
+
+    private static String getFilePathByUri_API11to18(Uri contentUri) {
+        String result = null;
+        try {
+            String[] projection = {MediaStore.Images.Media.DATA};
+
+            CursorLoader cursorLoader = new CursorLoader(context, contentUri, projection, null, null, null);
+            Cursor cursor = cursorLoader.loadInBackground();
             if (cursor != null) {
                 if (cursor.moveToFirst()) {
                     try {
-                        int columnIndex = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
-                        if (columnIndex > -1) {
-                            path = cursor.getString(columnIndex);
-                        }
+                        int column_index = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
+                        result = cursor.getString(column_index);
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
                 }
                 cursor.close();
             }
-            return path;
-        }
-        return null;
-    }
-
-    private static String getFilePathByUri_API11to18(Uri contentUri) {
-        String[] projection = {MediaStore.Images.Media.DATA};
-        String result = null;
-        CursorLoader cursorLoader = new CursorLoader(context, contentUri, projection, null, null, null);
-        Cursor cursor = cursorLoader.loadInBackground();
-        if (cursor != null) {
-            if (cursor.moveToFirst()) {
-                try {
-                    int column_index = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
-                    result = cursor.getString(column_index);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-            cursor.close();
+        } catch (Exception e) {
+            return null;
         }
         return result;
     }

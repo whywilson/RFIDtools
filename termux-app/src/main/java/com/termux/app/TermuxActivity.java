@@ -67,6 +67,8 @@ import java.util.regex.Pattern;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.PermissionChecker;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.viewpager.widget.PagerAdapter;
 import androidx.viewpager.widget.ViewPager;
@@ -163,8 +165,8 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
 
     void checkForFontAndColors() {
         try {
-            @SuppressLint("SdCardPath") File fontFile = new File("/data/data/" + TermuxService.packageName + "/files/home/.termux/font.ttf");
-            @SuppressLint("SdCardPath") File colorsFile = new File("/data/data/" + TermuxService.packageName + "/files/home/.termux/colors.properties");
+            @SuppressLint("SdCardPath") File fontFile = new File("/data/data/" + TermuxService.PACKAGE_NAME + "/files/home/.termux/font.ttf");
+            @SuppressLint("SdCardPath") File colorsFile = new File("/data/data/" + TermuxService.PACKAGE_NAME + "/files/home/.termux/colors.properties");
 
             final Properties props = new Properties();
             if (colorsFile.isFile()) {
@@ -198,10 +200,10 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
      * For processes to access shared internal storage (/sdcard) we need this permission.
      */
     public boolean ensureStoragePermissionGranted() {
-        if (checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
+        if (PermissionChecker.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PermissionChecker.PERMISSION_GRANTED) {
             return true;
         } else {
-            requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUESTCODE_PERMISSION_STORAGE);
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUESTCODE_PERMISSION_STORAGE);
             return false;
         }
     }
@@ -628,19 +630,22 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
         return null;
     }
 
-    public static String getPM3ClientPath() {
-        String file = TermuxService.HOME_PATH +
+    /**
+     * Get pm3 client file path
+     * old path is on app internal file path
+     * now we are use jnilib path
+     */
+    public String getPM3ClientPath() {
+        return getNativePath() +
                 File.separator +
-                "proxmark3" +
-                File.separator +
-                "proxmark3_" +
-                getABISupported(true);
-        try {
-            Os.chmod(file, 0700);
-        } catch (ErrnoException e) {
-            e.printStackTrace();
-        }
-        return file;
+                "libpm3rrg_cmd.so";
+    }
+
+    public String getNativePath() {
+        String ss = getApplicationInfo().nativeLibraryDir;
+        if (ss == null)
+            ss = getFilesDir().getPath() + "/lib";
+        return ss;
     }
 
     void addNewSession(boolean failSafe, String sessionName) {
